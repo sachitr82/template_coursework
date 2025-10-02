@@ -87,7 +87,7 @@ species_mean <- function(measure) {
 
 ```{r}
 #| label: fig-mass-length
-#| tbl-cap: "Flipper Length vs. Body Mass by Species"
+#| fig-cap: "Flipper Length vs. Body Mass by Species"
 penguins_clean <- na.omit(penguins)
 species_levels <- unique(penguins_clean$species)
 species_colors <- c("red", "blue", "darkgreen")
@@ -109,3 +109,29 @@ for (i in seq_along(species_levels)) {
          col = "black", pch = 8, cex = 2, lwd = 2)  # big black star
 }
 ```
+I like @fig-mass-length
+
+# Extension
+
+I will now proceed to stunt on you by creating a figure with multiple subfigures. Please refer to @fig-subplots
+
+```{r}
+#| layout-ncol: 3
+#| label: fig-subplots
+#| fig-cap: "Body Mass of Penguins by Species"
+#| fig-subcap:
+#|   - "`r species_name[1]`"
+#|   - "`r species_name[2]`"
+#|   - "`r species_name[3]`"
+colours <- c("red", "blue", "darkgreen")
+species_name <- unique(penguins$species)
+
+for (i in seq_along(species_name)) {
+  mass <- na.omit(penguins[penguins$species == species_name[i], "body_mass_g"])
+  boxplot(mass, col = colours[i], main = NULL)
+}
+```
+
+### References
+::: {#refs}
+:::
