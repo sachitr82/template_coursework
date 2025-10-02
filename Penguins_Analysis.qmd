@@ -1,0 +1,111 @@
+---
+title: "Penguins Analysis"
+subtitle: 'MSc in Statistics 2025/26, Imperial College London'
+author: "Sachit Ramakrishnan"
+format:
+  html:
+    toc: true
+    highlight: tango
+    self-contained: true
+    df-print: paged
+  pdf: default
+format-links: false
+bibliography: "Penguins_Analysis.bib" 
+---
+
+<style type="text/css">
+h1{
+  font-size: 24pt;
+}
+h2{
+  font-size: 18pt;
+}
+body{
+  font-size: 12pt;
+}
+</style>
+
+# 1. Loading the 'palmerpenguins' package
+```{r}
+#| eval: false
+install.packages("palmerpenguins")
+```
+
+```{r}
+#| warning: false
+library("palmerpenguins")
+```
+
+# 2. Missing Indicator
+
+```{r}
+#| echo: false
+data(penguins)
+penguins$missing <- apply(is.na(penguins), 1, any)
+```
+
+# 3. Flipper and Beak Length by Species
+
+```{r}
+#| label: tbl-palmer
+#| tbl-cap: "Average Bill and Flipper Length by Penguin Species"
+library(palmerpenguins)
+data <- penguins
+avg_bill <- tapply(data$bill_length_mm, data$species, mean, na.rm = TRUE)
+avg_flipper <- tapply(data$flipper_length_mm, data$species, mean, na.rm = TRUE)
+avg_sizes <- data.frame(
+  species = names(avg_bill),
+  avg_bill_length_mm = as.vector(avg_bill),
+  avg_flipper_length_mm = as.vector(avg_flipper)
+)
+colnames(avg_sizes) <- c("Species", "Average Bill Length (mm)", "Average Flipper Length (mm)")
+avg_sizes[, 2:3] <- round(avg_sizes[, 2:3], 2)
+knitr::kable(avg_sizes)
+```
+Here is @tbl-palmer my guy.
+
+# 4. Write a function `species_mean()` that calculates the mean of a numeric variable for each species. Document it with Roxygen2-style comments.
+```{r}
+species_mean <- function(measure) {
+  species_names <- unique(penguins$species)
+  sp_mean <- numeric(length(species_names))
+  
+  for (i in seq_along(species_names)) {
+    name <- species_names[i]
+    # extract the numeric vector for the given measure
+    sp_mean[i] <- mean(penguins[penguins$species == name, ][[measure]], na.rm = TRUE)
+  }
+  result <- data.frame(
+    species = species_names,
+    mean_value = round(sp_mean,2)
+  )
+  return(result)
+}
+```
+# 5. Create a scatter plot of flipper length vs. body mass, with different symbols and colours for each species. Add points to your scatter plot to show the species-specific mean values, using a different shape or colour.
+
+
+```{r}
+#| label: fig-mass-length
+#| tbl-cap: "Flipper Length vs. Body Mass by Species"
+penguins_clean <- na.omit(penguins)
+species_levels <- unique(penguins_clean$species)
+species_colors <- c("red", "blue", "darkgreen")
+species_pch <- c(16, 17, 15)
+plot(penguins_clean$flipper_length_mm,
+     penguins_clean$body_mass_g,
+     col = species_colors[as.numeric(penguins_clean$species)],
+     pch = species_pch[as.numeric(penguins_clean$species)],
+     xlab = "Flipper Length (mm)",
+     ylab = "Body Mass (g)")
+legend("topleft", legend = species_levels,
+       col = species_colors, pch = species_pch, title = "Species")
+for (i in seq_along(species_levels)) {
+  sp <- species_levels[i]
+  data_sp <- subset(penguins_clean, species == sp)
+  mean_flipper <- mean(data_sp$flipper_length_mm)
+  mean_mass <- mean(data_sp$body_mass_g)
+  points(mean_flipper, mean_mass,
+         col = "black", pch = 8, cex = 2, lwd = 2)  # big black star
+}
+```
